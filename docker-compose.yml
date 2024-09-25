@@ -1,17 +1,17 @@
 services:
-  publisher:
-    container_name: publisher
-    build:
-      context: ./extrator
-    ports:
-      - "3010:3000"
+  # publisher:
+  #   container_name: publisher
+  #   build:
+  #     context: ./extrator
+  #   ports:
+  #     - "3010:3000"
   
-  subscriber:
-    container_name: subscriber
-    build:
-      context: ./subscriber
-    ports:
-      - "3011:3000"
+  # subscriber:
+  #   container_name: subscriber
+  #   build:
+  #     context: ./subscriber
+  #   ports:
+  #     - "3011:3000"
 
   rabbitmq:
     image: rabbitmq:3-management   # Inclui o painel de gerenciamento
@@ -19,7 +19,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672" 
-
+    
   mysql:
     image: mysql:5.7.42-debian
     container_name: mysql

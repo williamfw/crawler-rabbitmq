@@ -3,7 +3,8 @@ import mysql.connector
 import json
 
 rabbitmq_host = 'rabbitmq-crawler'
-queue_name = 'noticias_queue'
+queue_name_dlq = 'noticias_dlq'  
+exchange_dlq = 'dlx_exchange'
 
 mysql_config: dict[str, str] = {
     'user': 'root',
@@ -56,19 +57,24 @@ def callback(ch, method, properties, body):
     except:
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
-def start_consuming():
+def start_consuming_dlq():
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="localhost", port=5672)
+        pika.ConnectionParameters(host='localhost', port=5672)
     )
 
     channel = connection.channel()
 
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    channel.exchange_declare(exchange=exchange_dlq, exchange_type='direct')
+    channel.queue_declare(queue=queue_name_dlq)
 
-    print("Aguardando mensagens da fila...")
+    channel.queue_bind(exchange='dlx_exchange', queue='noticias_dlq')
+
+    channel.basic_consume(queue='noticias_dlq', on_message_callback=callback)
+
+    print("Aguardando mensagens da DLQ...")
     channel.start_consuming()
 
 message_batch = []
 
 if __name__ == '__main__':
-    start_consuming()
+    start_consuming_dlq()

@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS noticias_g1;
 CREATE TABLE noticias_g1 (
   id int NOT NULL AUTO_INCREMENT,
   titulo varchar(300) NOT NULL,
-  subtitulo varchar(300) NOT NULL,
+  subtitulo TEXT NOT NULL,
   datahora varchar(100),
   autor varchar(300) NOT NULL,
   texto TEXT,

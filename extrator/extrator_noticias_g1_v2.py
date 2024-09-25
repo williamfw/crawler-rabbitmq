@@ -14,6 +14,42 @@ import pandas as pd
 import json
 import pika
 
+def contentOrDefault(content):
+    return content.text if content else ''
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host="localhost", port=5672)
+)
+
+channel = connection.channel()
+
+channel.exchange_declare(exchange='dlx_exchange', exchange_type='direct')
+
+channel.queue_declare(queue='noticias_dlq')
+
+channel.queue_bind(exchange='dlx_exchange', queue='noticias_dlq', routing_key='dlq_routing_key')
+
+channel.exchange_declare(
+    exchange='crawler_exchange',
+    exchange_type='direct', 
+    durable=True
+)
+
+channel.queue_declare(
+    queue='noticias_queue',
+    arguments={
+        'x-dead-letter-exchange': 'dlx_exchange',
+        'x-dead-letter-routing-key': 'dlq_routing_key',
+        'x-max-length': 1000  
+    }
+)
+
+channel.queue_bind(
+    exchange='crawler_exchange',
+    queue='noticias_queue',
+    routing_key='noticias_g1'
+)
+
 # URL do RSS
 rss_url = 'https://g1.globo.com/rss/g1/'
 
@@ -58,11 +94,10 @@ for link in links:
     requisicao = requests.get(link)
     site = BeautifulSoup(requisicao.text, "html.parser")
     try:
-        titulo_element = site.find(class_='content-head__title')
-        titulo = titulo_element.text if titulo_element else ''# Busca o título da matéria
+        titulo = contentOrDefault(site.find(class_='content-head__title'))# Busca o título da matéria
         print('Título:', titulo, '\n')        
-        subtitulo_element = site.find(class_='content-head__subtitle')
-        subtitulo = subtitulo_element.text if subtitulo_element else '' # Busca o subtítulo da matéria
+        
+        subtitulo = contentOrDefault(site.find(class_='content-head__subtitle')) # Busca o subtítulo da matéria
         print('Subtítulo:', subtitulo, '\n')
         
         # Entra no artigo propriamente dito
@@ -102,12 +137,10 @@ for link in links:
                 links_imagens = ''
         
         # Extrai as informações de auto e data 
-        from_element = site.find(class_='content-publication-data__from')
-        autor = from_element.text if from_element else ''
+        autor = contentOrDefault(site.find(class_='content-publication-data__from'))
         print('Autor:', autor, '\n')
         
-        data_element = site.find(class_='content-publication-data__updated')
-        data = data_element.text if data_element else ''
+        data = contentOrDefault(site.find(class_='content-publication-data__updated'))
         print('Data:', data, '\n') 
         
     except AttributeError:
@@ -152,55 +185,7 @@ data_hora_atual = datetime.now()
 # Converter o DataFrame para um dicionário de registros
 data_json = df.to_dict(orient='records')
 
-# Salvar os dados do DataFrame em um arquivo JSON
-#output_file = 'noticias_g1_' + str(data_hora_atual).replace(' ','_').replace('.','').replace(':','') + '.json'
-
-#ith open(output_file, 'w', encoding='utf-8') as f:
-#    json.dump(data_json, f, ensure_ascii=False, indent=4)
-
-#print(f"As informações foram salvas no arquivo JSON: {output_file}")
-
-
 # In[ ]:
-
-
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host="localhost", port=5672)
-)
-
-channel = connection.channel()
-
-# Declarar a Dead Letter Exchange (DLX)
-channel.exchange_declare(exchange='dlx_exchange', exchange_type='direct')
-
-# Declarar a Dead Letter Queue (DLQ)
-channel.queue_declare(queue='dlq')
-
-# Vincular a DLQ à DLX
-channel.queue_bind(exchange='dlx_exchange', queue='dlq', routing_key='dlq_routing_key')
-
-channel.exchange_declare(
-    exchange='crawler_exchange',
-    exchange_type='direct', 
-    durable=True
-)
-
-channel.queue_declare(
-    queue='noticias_queue',
-    arguments={
-        'x-dead-letter-exchange': 'dlx_exchange',
-        'x-dead-letter-routing-key': 'dlq_routing_key',
-        'x-max-length': 1000  # (opcional) Tamanho máximo da fila antes de mover para DLQ
-    }
-)
-
-channel.queue_bind(
-    exchange='crawler_exchange',
-    queue='noticias_queue',
-    routing_key='noticias_g1'
-)
-
-
 
 for json_content in data_json:
     channel.basic_publish(exchange="crawler_exchange", routing_key="noticias_g1", body=json.dumps(json_content))
