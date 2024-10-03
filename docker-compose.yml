@@ -1,10 +1,10 @@
 services:
-  # publisher:
-  #   container_name: publisher
-  #   build:
-  #     context: ./extrator
-  #   ports:
-  #     - "3010:3000"
+  maker:
+    container_name: maker
+    build:
+      context: ./exchange
+    ports:
+      - "3001:3000"
   
   # subscriber:
   #   container_name: subscriber
@@ -14,21 +14,21 @@ services:
   #     - "3011:3000"
 
   rabbitmq:
-    image: rabbitmq:3-management   # Inclui o painel de gerenciamento
+    image: rabbitmq:3-management 
     container_name: rabbitmq-crawler
     ports:
       - "5672:5672"
       - "15672:15672" 
     
-  mysql:
-    image: mysql:5.7.42-debian
-    container_name: mysql
-    restart: always
-    environment:
-      MYSQL_USER: 'crawler_user'
-      MYSQL_PASSWORD: 'crawler_pass'
-      MYSQL_ROOT_PASSWORD: 'root'
-    ports:
-      - "3306:3306"
-    volumes:
-      - ./script/crawler_db.sql:/docker-entrypoint-initdb.d/crawler_db.sql
+  # mysql:
+  #   image: mysql:5.7.42-debian
+  #   container_name: mysql
+  #   restart: always
+  #   environment:
+  #     MYSQL_USER: 'crawler_user'
+  #     MYSQL_PASSWORD: 'crawler_pass'
+  #     MYSQL_ROOT_PASSWORD: 'root'
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - ./script/crawler_db.sql:/docker-entrypoint-initdb.d/crawler_db.sql
