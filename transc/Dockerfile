@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY maker.py .
 COPY script_to_api.py .
-COPY script_to_print.py .
+COPY script_to_transc.py .
 
 EXPOSE 3001
 

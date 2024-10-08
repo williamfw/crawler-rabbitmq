@@ -68,35 +68,50 @@ channel.queue_declare(extract_links_queue, durable=True, arguments={
     'x-dead-letter-routing-key': extract_links_dlq_routing_key
 })
 channel.queue_declare(extract_links_dlq, durable=True)
-channel.queue_declare(extract_to_api_queue, durable=True)
+channel.queue_declare(extract_to_api_queue, durable=True, arguments={
+    'x-dead-letter-exchange': dlx,
+    'x-dead-letter-routing-key': extract_to_api_dlq_routing_key
+})
 channel.queue_declare(extract_to_api_dlq, durable=True)
 
 channel.queue_bind(extract_links_queue, exchange, extract_links_routing_key)
-channel.queue_bind(extract_links_dlq, exchange, extract_links_dlq_routing_key)
+channel.queue_bind(extract_links_dlq, dlx, extract_links_dlq_routing_key)
 channel.queue_bind(extract_to_api_queue, exchange, extract_to_api_routing_key)
-channel.queue_bind(extract_to_api_dlq, exchange, extract_to_api_dlq_routing_key)
+channel.queue_bind(extract_to_api_dlq, dlx, extract_to_api_dlq_routing_key)
 
 #declarações de filas e bind para exchange de crawler
-channel.queue_declare(crawler_links_queue, durable=True)
+channel.queue_declare(crawler_links_queue, durable=True, arguments={
+    'x-dead-letter-exchange': dlx,
+    'x-dead-letter-routing-key': crawler_links_dlq_routing_key
+})
 channel.queue_declare(crawler_links_dlq, durable=True)
-channel.queue_declare(crawler_to_api_queue, durable=True)
+channel.queue_declare(crawler_to_api_queue, durable=True, arguments={
+    'x-dead-letter-exchange': dlx,
+    'x-dead-letter-routing-key': crawler_to_api_dlq_routing_key
+})
 channel.queue_declare(crawler_to_api_dlq, durable=True)
 
 channel.queue_bind(crawler_links_queue, exchange, crawler_links_routing_key)
-channel.queue_bind(crawler_links_dlq, exchange, crawler_links_dlq_routing_key)
+channel.queue_bind(crawler_links_dlq, dlx, crawler_links_dlq_routing_key)
 channel.queue_bind(crawler_to_api_queue, exchange, crawler_to_api_routing_key)
-channel.queue_bind(crawler_to_api_dlq, exchange, crawler_to_api_dlq_routing_key)
+channel.queue_bind(crawler_to_api_dlq, dlx, crawler_to_api_dlq_routing_key)
 
 #declarações de filas e bind para exchange de transcrição
-channel.queue_declare(transc_files_queue, durable=True)
+channel.queue_declare(transc_files_queue, durable=True, arguments={
+    'x-dead-letter-exchange': dlx,
+    'x-dead-letter-routing-key': transc_files_dlq_routing_key
+})
 channel.queue_declare(transc_files_dlq, durable=True)
-channel.queue_declare(transc_to_api_queue, durable=True)
+channel.queue_declare(transc_to_api_queue, durable=True, arguments={
+    'x-dead-letter-exchange': dlx,
+    'x-dead-letter-routing-key': transc_to_api_dlq_routing_key
+})
 channel.queue_declare(transc_to_api_dlq, durable=True)
 
 channel.queue_bind(transc_files_queue, exchange, transc_files_routing_key)
-channel.queue_bind(transc_files_dlq, exchange, transc_files_dlq_routing_key)
+channel.queue_bind(transc_files_dlq, dlx, transc_files_dlq_routing_key)
 channel.queue_bind(transc_to_api_queue, exchange, transc_to_api_routing_key)
-channel.queue_bind(transc_to_api_dlq, exchange, transc_to_api_dlq_routing_key)
+channel.queue_bind(transc_to_api_dlq, dlx, transc_to_api_dlq_routing_key)
 
 #declarações de filas e bind para exchange de print
 channel.queue_declare(print_links_queue, durable=True, arguments={

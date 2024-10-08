@@ -17,6 +17,6 @@ COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 COPY .env .
-COPY maker.py .
+COPY create_queues.py .
 
 CMD ["sh", "-c", "rabbitmq-server"]
