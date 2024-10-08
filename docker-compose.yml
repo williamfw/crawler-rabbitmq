@@ -4,31 +4,14 @@ services:
     build:
       context: ./exchange
     ports:
-      - "3001:3000"
-  
-  # subscriber:
-  #   container_name: subscriber
-  #   build:
-  #     context: ./subscriber
-  #   ports:
-  #     - "3011:3000"
-
-  rabbitmq:
-    image: rabbitmq:3-management 
-    container_name: rabbitmq-crawler
-    ports:
       - "5672:5672"
-      - "15672:15672" 
-    
-  # mysql:
-  #   image: mysql:5.7.42-debian
-  #   container_name: mysql
-  #   restart: always
-  #   environment:
-  #     MYSQL_USER: 'crawler_user'
-  #     MYSQL_PASSWORD: 'crawler_pass'
-  #     MYSQL_ROOT_PASSWORD: 'root'
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - ./script/crawler_db.sql:/docker-entrypoint-initdb.d/crawler_db.sql
+      - "15672:15672"
+
+  prints:
+    container_name: prints
+    build:
+      context: ./exchange
+    ports:
+      - "3001:3001"
+    depends_on:
+      - maker

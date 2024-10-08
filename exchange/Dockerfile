@@ -19,6 +19,4 @@ RUN python3 -m pip install --no-cache-dir -r requirements.txt
 COPY .env .
 COPY maker.py .
 
-EXPOSE 5672 15672
-
 CMD ["sh", "-c", "rabbitmq-server"]
