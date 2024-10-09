@@ -19,4 +19,8 @@ RUN python3 -m pip install --no-cache-dir -r requirements.txt
 COPY .env .
 COPY create_queues.py .
 
-CMD ["sh", "-c", "rabbitmq-server"]
+COPY entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]

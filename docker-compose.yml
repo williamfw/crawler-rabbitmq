@@ -1,17 +1,54 @@
 services:
-  maker:
-    container_name: maker
+  exchange:
+    container_name: exchange
     build:
       context: ./exchange
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   prints:
     container_name: prints
     build:
-      context: ./exchange
+      context: ./prints
     ports:
-      - "3001:3001"
+      - "3001:3000"
     depends_on:
-      - maker
+      exchange:
+        condition: service_healthy
+  
+  crawlers:
+    container_name: crawlers
+    build:
+      context: ./crawlers
+    ports:
+      - "3002:3000"
+    depends_on:
+      exchange:
+        condition: service_healthy
+  
+  extract:
+    container_name: extract
+    build:
+      context: ./extract
+    ports:
+      - "3003:3000"
+    depends_on:
+      exchange:
+        condition: service_healthy
+  
+  transc:
+    container_name: transc
+    build:
+      context: ./transc
+    ports:
+      - "3004:3000"
+    depends_on:
+      exchange:
+        condition: service_healthy
