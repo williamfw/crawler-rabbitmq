@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY .env .
 COPY maker.py .
+COPY queue_timer.py .
 COPY script_to_api.py .
 COPY script_to_crawler.py .
 

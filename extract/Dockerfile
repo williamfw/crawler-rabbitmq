@@ -7,6 +7,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY .env .
+COPY queue_timer.py .
 COPY maker.py .
 COPY script_to_api.py .
 COPY script_to_extract.py .

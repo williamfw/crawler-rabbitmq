@@ -1,6 +1,7 @@
 import os
 import pika
 from dotenv import load_dotenv
+import queue_timer
 
 load_dotenv()
 
@@ -20,9 +21,13 @@ connection = pika.BlockingConnection(
     pika.ConnectionParameters(host, port)
 )
 
+def stop_consuming():
+    print(f"Encerrando a conexão após {queue_timer.TIMEOUT} segundos de inatividade.")
+    channel.stop_consuming()
+
 def callback(ch, method, properties, body):
     try:
-        #raise
+        queue_timer.reset_timer(stop_consuming)
         ch.basic_publish(
             exchange,
             crawler_to_api_routing_key,
@@ -48,6 +53,10 @@ def callback(ch, method, properties, body):
             
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
-channel = connection.channel()
-channel.basic_consume(crawler_links_queue, callback)
-channel.start_consuming()
+try:
+    channel = connection.channel()
+    channel.basic_consume(crawler_links_queue, callback)
+    channel.start_consuming()
+finally:
+    connection.close()
+    print("Conexão encerrada. Terminal liberado.")

@@ -2,10 +2,11 @@ import os
 import requests
 import pika
 from dotenv import load_dotenv
+import queue_timer
 
 load_dotenv()
 
-api_save_url = os.getenv('URL_API_TRANSCS_SAVE', '')
+api_save_url = os.getenv('URL_API_SAVE', '')
 host = os.getenv('RABBITMQ_HOST', '')
 port = os.getenv('RABBITMQ_PORT', '')
 exchange = os.getenv('EXCHANGE', '')
@@ -20,8 +21,13 @@ connection = pika.BlockingConnection(
     pika.ConnectionParameters(host, port)
 )
 
+def stop_consuming():
+    print(f"Encerrando a conexão após {queue_timer.TIMEOUT} segundos de inatividade.")
+    channel.stop_consuming()
+
 def callback(ch, method, properties, body):
     try:
+        queue_timer.reset_timer(stop_consuming)
         response = requests.post(api_save_url, json=body)
         response.raise_for_status()
 
@@ -41,6 +47,10 @@ def callback(ch, method, properties, body):
             
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
-channel = connection.channel()
-channel.basic_consume(transc_to_api_queue, callback)
-channel.start_consuming()
+try:
+    channel = connection.channel()
+    channel.basic_consume(transc_to_api_queue, callback)
+    channel.start_consuming()
+finally:
+    connection.close()
+    print("Conexão encerrada. Terminal liberado.")

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-api_url = os.getenv('URL_API_PRINTS', '')
+api_url = os.getenv('URL_API', '')
 host = os.getenv('RABBITMQ_HOST', '')
 port = os.getenv('RABBITMQ_PORT', '')
 exchange = os.getenv('EXCHANGE', '')
